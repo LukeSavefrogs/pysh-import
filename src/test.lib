@@ -1,0 +1,67 @@
+#!/bin/env bash
+
+# shellcheck disable=SC2155
+declare -r SCRIPT_NAME="$(basename "$0")";
+# shellcheck disable=SC2155,SC2164
+declare -r SCRIPT_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )";
+
+declare -r MODULE="${SCRIPT_PATH}/../tests/module.mock.sh";
+declare -r LIBRARY="${SCRIPT_PATH}/../src/bash_import.sh";
+
+################################################################################
+#                                 Test start
+################################################################################
+declare -r red=$'\033[0;31m';
+declare -r green=$'\033[0;36m';
+declare -r reset=$'\033[0m';
+
+export PYIMPORT_DEBUG="true";
+
+echo "TEST 1.1)"
+(
+    source "${LIBRARY}";
+    from "${MODULE}" import "*"
+) 2> >(sed "s/^/\t${red}STDERR${reset}: |/") > >(sed "s/^/\t${green}STDOUT${reset}: |/");
+printf "\n\n"
+
+echo "TEST 1.2)"
+(
+    source "${LIBRARY}";
+    from "${MODULE}" import "*, test as name"
+) 2> >(sed "s/^/\t${red}STDERR${reset}: |/") > >(sed "s/^/\t${green}STDOUT${reset}: |/");
+printf "\n\n"
+
+echo "TEST 1.3)"
+(
+    source "${LIBRARY}";
+    from "${MODULE}" import "*" as TEST
+) 2> >(sed "s/^/\t${red}STDERR${reset}: |/") > >(sed "s/^/\t${green}STDOUT${reset}: |/");
+printf "\n\n"
+
+echo "TEST 2)"
+( 
+    source "${LIBRARY}";
+    from "${MODULE}" import test_function1, test_variable3;
+) 2> >(sed "s/^/\t${red}STDERR${reset}: |/") > >(sed "s/^/\t${green}STDOUT${reset}: |/");
+printf "\n\n"
+
+echo "TEST 3)"
+(
+    source "${LIBRARY}";
+    from "${MODULE}" import test_function1 as fun_alias, test_variable3 as var_alias, test_function2
+) 2> >(sed "s/^/\t${red}STDERR${reset}: |/") > >(sed "s/^/\t${green}STDOUT${reset}: |/");
+printf "\n\n"
+
+echo "TEST 4)"
+(
+    source "${LIBRARY}";
+    from "${MODULE}" import test_function1, test_variable3 as var_alias
+) 2> >(sed "s/^/\t${red}STDERR${reset}: |/") > >(sed "s/^/\t${green}STDOUT${reset}: |/");
+printf "\n\n"
+
+echo "TEST 3)"
+(
+    source "${LIBRARY}";
+    from "${MODULE}" import test_function1 as ,  as var_alias
+) 2> >(sed "s/^/\t${red}STDERR${reset}: |/") > >(sed "s/^/\t${green}STDOUT${reset}: |/");
+
